@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Practice Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1115;
+    --bg-alt:#14171D;
+    --surface:#1A1E25;
+    --surface-hover:#20252D;
+    --border:#2A2F38;
+    --border-soft:#22262E;
+    --text:#E6E8EB;
+    --text-dim:#8D95A1;
+    --text-faint:#5B626D;
+    --accent:#5FB3A3;
+    --accent-dim:#3E7A70;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'IBM Plex Sans', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.5;}
+  ::selection{background:var(--accent-dim); color:#fff;}
+
+  .dashboard-link {
+    display: inline-block;
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--accent-dim);
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+  .dashboard-link:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  /* Sleek custom scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-dim);
+  }
+  html, body, .sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--bg);
+  }
+
+  .app{display:grid; grid-template-columns:260px 1fr; min-height:100vh;}
+  @media (max-width: 860px){ .app{grid-template-columns:1fr;} }
+
+  /* Sidebar */
+  .sidebar{background:var(--bg-alt); border-right:1px solid var(--border-soft); padding:28px 0 40px; position:sticky; top:0; height:100vh; overflow-y:auto;}
+  @media (max-width: 860px){ .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:20px 0;} }
+  .brand{padding:0 24px 24px; border-bottom:1px solid var(--border-soft); margin-bottom:8px;}
+  .brand-mark{font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--accent); text-transform:uppercase;}
+  .brand-title{font-family:var(--mono); font-weight:700; font-size:19px; margin:6px 0 2px; color:var(--text);}
+  .brand-sub{font-size:12px; color:var(--text-faint);}
+  .overall{padding:18px 24px 20px; border-bottom:1px solid var(--border-soft);}
+  .overall-num{font-family:var(--mono); font-size:28px; font-weight:700; color:var(--text);}
+  .overall-num small{font-size:14px; color:var(--text-faint); font-weight:400;}
+  .overall-bar{height:5px; background:var(--border); border-radius:3px; margin-top:10px; overflow:hidden;}
+  .overall-bar-fill{height:100%; background:linear-gradient(90deg, var(--accent), #7FD1C1); border-radius:3px; transition:width .25s ease;}
+  .overall-label{font-size:11px; color:var(--text-faint); margin-top:8px; font-family:var(--mono);}
+  .streak{padding:14px 24px 4px; font-size:11.5px; color:var(--text-faint); font-family:var(--mono);}
+  .streak strong{color:var(--accent);}
+
+  .chain{position:relative; padding:18px 24px 4px;}
+  .chain::before{content:""; position:absolute; left:38px; top:20px; bottom:20px; width:1px; background:var(--border);}
+  @media (max-width:860px){ .chain{display:flex; overflow-x:auto; gap:4px; padding:14px 16px;} .chain::before{display:none;} }
+  .node{display:flex; align-items:center; gap:14px; padding:8px 6px; cursor:pointer; border-radius:8px; position:relative; transition:background .15s ease;}
+  .node:hover{background:var(--surface-hover);}
+  .node.active{background:var(--surface);}
+  .node.active .node-label-name{color:var(--text);}
+  @media (max-width:860px){ .node{flex-direction:column; gap:6px; min-width:74px; text-align:center;} }
+  .node-dot{width:28px; height:28px; border-radius:50%; background:conic-gradient(var(--accent) calc(var(--pct)*1%), var(--border) 0); display:flex; align-items:center; justify-content:center; flex-shrink:0; z-index:1;}
+  .node-dot::after{content:""; width:19px; height:19px; border-radius:50%; background:var(--bg-alt);}
+  .node.active .node-dot::after{background:var(--surface);}
+  .node-label-name{font-size:12.5px; font-weight:500; color:var(--text-dim); line-height:1.25;}
+  .node-label-count{font-family:var(--mono); font-size:10.5px; color:var(--text-faint);}
+
+  /* Main */
+  .main{padding:32px 40px 100px; max-width:900px;}
+  @media (max-width:860px){ .main{padding:24px 18px 80px;} }
+
+  .toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:30px;}
+  .search{flex:1 1 220px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-family:var(--sans); font-size:13.5px; outline:none;}
+  .search::placeholder{color:var(--text-faint);}
+  .search:focus{border-color:var(--accent);}
+  .chip{font-family:var(--mono); font-size:11.5px; padding:8px 12px; border-radius:7px; background:var(--surface); border:1px solid var(--border); color:var(--text-dim); cursor:pointer; user-select:none; white-space:nowrap; transition:all .15s ease;}
+  .chip:hover{border-color:var(--accent-dim);}
+  .chip.active{background:var(--accent); color:#0B1210; border-color:var(--accent); font-weight:600;}
+  .reset-btn{margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--text-faint); background:none; border:1px solid var(--border); border-radius:7px; padding:8px 12px; cursor:pointer;}
+  .reset-btn:hover{color:#E0708A; border-color:#E0708A;}
+
+  .category{margin-bottom:44px; scroll-margin-top:20px;}
+  .category-head{display:flex; align-items:center; gap:14px; cursor:pointer; user-select:none; padding:4px 0;}
+  .category-head:hover .category-title{color:var(--accent);}
+  .category-chevron{color:var(--text-faint); transition:transform .2s ease, color .15s ease;}
+  .category-head:hover .category-chevron{color:var(--text);}
+  
+  .category.collapsed .category-body {
+    display: none;
+  }
+  .category.collapsed .category-chevron {
+    transform: rotate(-90deg);
+  }
+
+  /* Revision panel styles */
+  .revision-card {
+    background: var(--bg-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  .revision-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .revision-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .revision-roll-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .revision-roll-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--surface-hover);
+  }
+  .revision-items {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 640px) {
+    .revision-items {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+  }
+  .revision-item {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 105px;
+  }
+  .revision-item:hover {
+    background: var(--surface-hover);
+    border-color: var(--border);
+    transform: translateY(-1px);
+  }
+  .revision-item-meta {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .revision-item-name {
+    font-size: 13.5px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+  .revision-item-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text-dim);
+  }
+  .revision-item.done {
+    border-color: var(--border-soft);
+    opacity: 0.65;
+  }
+  .revision-item.done:hover {
+    opacity: 0.85;
+  }
+  .revision-item.done .revision-item-name {
+    color: var(--text-faint);
+    text-decoration: line-through;
+  }
+  .revision-item.done .checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .category-title{font-family:var(--mono); font-size:20px; font-weight:700; color:var(--text);}
+  .category-count{font-family:var(--mono); font-size:12px; color:var(--text-faint);}
+  .category-bar{height:3px; background:var(--border); border-radius:2px; margin:10px 0 20px; overflow:hidden;}
+  .category-bar-fill{height:100%; background:var(--accent); transition:width .25s ease;}
+  .group-name{
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:22px 0 10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    user-select:none;
+    width:fit-content;
+    transition:color 0.15s ease;
+  }
+  .group-name:first-of-type{margin-top:0;}
+  .group-name:hover{color:var(--text-dim);}
+  .group-chevron{color:var(--text-faint); transition:transform .2s ease, color .15s ease;}
+  .group-name:hover .group-chevron{color:var(--text-dim);}
+
+  .group-container.collapsed .group-items {
+    display:none;
+  }
+  .group-container.collapsed .group-chevron {
+    transform:rotate(-90deg);
+  }
+
+  .item{display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:8px; cursor:pointer;}
+  .item:hover{background:var(--surface-hover);}
+  .item.hidden{display:none;}
+  .checkbox{width:18px; height:18px; border-radius:5px; border:1.5px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:background .12s ease, border-color .12s ease;}
+  .checkbox svg{opacity:0; width:11px; height:11px;}
+  .item.done .checkbox{background:var(--accent); border-color:var(--accent);}
+  .item.done .checkbox svg{opacity:1;}
+  .item.done .item-name{color:var(--text-faint); text-decoration:line-through; text-decoration-color:var(--border);}
+  .item-name{font-size:14px; color:var(--text); flex:1;}
+
+  .no-results{color:var(--text-faint); font-size:13.5px; padding:40px 0; text-align:center; font-style:italic;}
+
+  footer{max-width:900px; padding:0 40px 60px; color:var(--text-faint); font-size:11.5px; font-family:var(--mono);}
+  @media (max-width:860px){ footer{padding:0 18px 50px;} }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">// reference sheet</div>
+      <div class="brand-title">DSA Sheet</div>
+      <div class="brand-sub">Full algorithms &amp; data structures checklist.</div>
+      <a href="dsa-revision-dashboard.html" class="dashboard-link">Open Dashboard</a>
+    </div>
+    <div class="overall">
+      <div class="overall-num" id="overallNum">0<small>%</small></div>
+      <div class="overall-bar"><div class="overall-bar-fill" id="overallBar" style="width:0%"></div></div>
+      <div class="overall-label" id="overallLabel">0 / 0 topics done</div>
+    </div>
+    <div class="streak" id="streakLabel"></div>
+    <nav class="chain" id="chain"></nav>
+  </aside>
+
+  <main class="main">
+    <div class="toolbar">
+      <input type="text" class="search" id="search" placeholder="Search topics…">
+      <div class="chip active" data-filter="all">all</div>
+      <div class="chip" data-filter="pending">pending</div>
+      <div class="chip" data-filter="done">done</div>
+      <button class="reset-btn" id="collapseAllBtn" style="margin-left: auto;">expand all</button>
+      <button class="reset-btn" id="resetBtn" style="margin-left: 8px;">reset progress</button>
+    </div>
+
+    <div id="categories"></div>
+    <div class="no-results" id="noResults" style="display:none;">No topics match your search.</div>
+  </main>
+</div>
+
+<footer>Full reference list, transcribed as given — every category, subsection and item. Progress saves locally in this browser only; open this file any day to pick up where you left off.</footer>
+
+<script>
+/* ===================== DATA (verbatim, complete) ===================== */
+const DATA = [
+  {id:'algebra', name:'Algebra', groups:[
+    {name:'Fundamentals', items:[
+      'Binary Exponentiation',
+      'Euclidean algorithm for computing the greatest common divisor',
+      'Extended Euclidean Algorithm',
+      'Linear Diophantine Equations',
+      'Fibonacci Numbers',
+      'Prime numbers',
+      'Sieve of Eratosthenes',
+      'Linear Sieve',
+      'Primality tests',
+      'Integer factorization'
+    ]},
+    {name:'Number-theoretic functions', items:[
+      "Euler's totient function",
+      'Number of divisors / sum of divisors'
+    ]},
+    {name:'Modular arithmetic', items:[
+      'Modular Inverse',
+      'Linear Congruence Equation',
+      'Chinese Remainder Theorem',
+      "Garner's Algorithm",
+      'Factorial modulo p',
+      'Discrete Log',
+      'Primitive Root',
+      'Discrete Root',
+      'Montgomery Multiplication'
+    ]},
+    {name:'Number systems', items:[
+      'Balanced Ternary',
+      'Gray code'
+    ]},
+    {name:'Bit manipulation', items:[
+      'Binary number',
+      'Bit operators',
+      'Bitwise operators',
+      'Shift operators',
+      'Useful tricks',
+      'Set/flip/clear a bit',
+      'Check if a bit is set',
+      'Check if the number is divisible by a power of 2',
+      'Check if an integer is a power of 2',
+      'Clear the right-most set bit',
+      "Brian Kernighan's algorithm",
+      'Count set bits upto $n$',
+      'Additional tricks',
+      'Language and compiler support',
+      'Practice Problems',
+      'Enumerating submasks of a bitmask'
+    ]},
+    {name:'Miscellaneous', items:[
+      'Arbitrary-Precision Arithmetic',
+      'Fast Fourier transform',
+      'Operations on polynomials and series',
+      'Continued fractions',
+      'Factoring Exponentiation'
+    ]}
+  ]},
+  {id:'ds', name:'Data Structures', groups:[
+    {name:'Fundamentals', items:[
+      'Minimum Stack / Minimum Queue',
+      'Sparse Table'
+    ]},
+    {name:'Trees', items:[
+      'Disjoint Set Union',
+      'Fenwick Tree',
+      'Sqrt Decomposition',
+      'Segment Tree',
+      'Treap',
+      'Sqrt Tree',
+      'Randomized Heap'
+    ]},
+    {name:'Advanced', items:[
+      'Deleting from a data structure in O(T(n) log n)'
+    ]}
+  ]},
+  {id:'dp', name:'Dynamic Programming', groups:[
+    {name:'Fundamentals', items:[
+      'Introduction to Dynamic Programming',
+      'Knapsack Problem',
+      'Longest increasing subsequence'
+    ]},
+    {name:'DP optimizations', items:[
+      'Divide and Conquer DP',
+      "Knuth's Optimization"
+    ]},
+    {name:'Tasks', items:[
+      'Dynamic Programming on Broken Profile. Problem "Parquet"',
+      'Finding the largest zero submatrix'
+    ]}
+  ]},
+  {id:'strings', name:'String Processing', groups:[
+    {name:'Fundamentals', items:[
+      'String Hashing',
+      'Rabin-Karp for String Matching',
+      'Prefix function - Knuth-Morris-Pratt',
+      'Z-function',
+      'Suffix Array',
+      'Aho-Corasick algorithm'
+    ]},
+    {name:'Advanced', items:[
+      'Suffix Tree',
+      'Suffix Automaton',
+      'Lyndon factorization'
+    ]},
+    {name:'Tasks', items:[
+      'Expression parsing',
+      "Manacher's Algorithm - Finding all sub-palindromes in O(N)",
+      'Finding repetitions'
+    ]}
+  ]},
+  {id:'linalg', name:'Linear Algebra', groups:[
+    {name:'Matrices', items:[
+      'Gauss & System of Linear Equations',
+      'Gauss & Determinant',
+      'Kraut & Determinant',
+      'Rank of a matrix'
+    ]}
+  ]},
+  {id:'combo', name:'Combinatorics', groups:[
+    {name:'Fundamentals', items:[
+      'Finding Power of Factorial Divisor',
+      'Binomial Coefficients',
+      'Catalan Numbers'
+    ]},
+    {name:'Techniques', items:[
+      'The Inclusion-Exclusion Principle',
+      "Burnside's lemma / Pólya enumeration theorem",
+      'Stars and bars',
+      'Generating all K-combinations'
+    ]},
+    {name:'Tasks', items:[
+      'Placing Bishops on a Chessboard',
+      'Balanced bracket sequences',
+      'Counting labeled graphs'
+    ]}
+  ]},
+  {id:'numerical', name:'Numerical Methods', groups:[
+    {name:'Search', items:[
+      'Binary Search',
+      'Ternary Search',
+      "Newton's method for finding roots",
+      'Simulated Annealing'
+    ]},
+    {name:'Integration', items:[
+      "Integration by Simpson's formula"
+    ]}
+  ]},
+  {id:'geometry', name:'Geometry', groups:[
+    {name:'Elementary operations', items:[
+      'Basic Geometry',
+      'Finding the equation of a line for a segment',
+      'Intersection Point of Lines',
+      'Check if two segments intersect',
+      'Intersection of Segments',
+      'Circle-Line Intersection',
+      'Circle-Circle Intersection',
+      'Common tangents to two circles',
+      'Length of the union of segments'
+    ]},
+    {name:'Polygons', items:[
+      'Oriented area of a triangle',
+      'Area of simple polygon',
+      'Check if points belong to the convex polygon in O(log N)',
+      'Minkowski sum of convex polygons',
+      "Pick's Theorem - area of lattice polygons",
+      'Lattice points of non-lattice polygon'
+    ]},
+    {name:'Convex hull', items:[
+      'Convex hull construction',
+      'Convex hull trick and Li Chao tree'
+    ]},
+    {name:'Sweep-line', items:[
+      'Search for a pair of intersecting segments'
+    ]},
+    {name:'Planar graphs', items:[
+      'Finding faces of a planar graph',
+      'Point location in O(log N)'
+    ]},
+    {name:'Miscellaneous', items:[
+      'Finding the nearest pair of points',
+      'Delaunay triangulation and Voronoi diagram',
+      'Vertical decomposition',
+      'Half-plane intersection - S&I Algorithm in O(N log N)',
+      'Manhattan Distance',
+      'Minimum Enclosing Circle'
+    ]}
+  ]},
+  {id:'graphs', name:'Graphs', groups:[
+    {name:'Graph traversal', items:[
+      'Breadth First Search',
+      'Depth First Search'
+    ]},
+    {name:'Connected components, bridges, articulations points', items:[
+      'Finding Connected Components',
+      'Finding Bridges in O(N+M)',
+      'Finding Bridges Online',
+      'Finding Articulation Points in O(N+M)',
+      'Strongly Connected Components and Condensation Graph',
+      'Strong Orientation'
+    ]},
+    {name:'Single-source shortest paths', items:[
+      'Dijkstra - finding shortest paths from given vertex',
+      'Dijkstra on sparse graphs',
+      'Bellman-Ford - finding shortest paths with negative weights',
+      '0-1 BFS',
+      'D´Esopo-Pape algorithm'
+    ]},
+    {name:'All-pairs shortest paths', items:[
+      'Floyd-Warshall - finding all shortest paths',
+      'Number of paths of fixed length / Shortest paths of fixed length'
+    ]},
+    {name:'Spanning trees', items:[
+      "Minimum Spanning Tree - Prim's Algorithm",
+      'Minimum Spanning Tree - Kruskal',
+      'Minimum Spanning Tree - Kruskal with Disjoint Set Union',
+      'Second best Minimum Spanning Tree - Using Kruskal and Lowest Common Ancestor',
+      'Kirchhoff Theorem',
+      'Prüfer code'
+    ]},
+    {name:'Cycles', items:[
+      'Checking a graph for acyclicity and finding a cycle in O(M)',
+      'Finding a Negative Cycle in the Graph',
+      'Eulerian Path'
+    ]},
+    {name:'Lowest common ancestor', items:[
+      'Lowest Common Ancestor',
+      'Lowest Common Ancestor - Binary Lifting',
+      'Lowest Common Ancestor - Farach-Colton and Bender algorithm',
+      'Solve RMQ by finding LCA',
+      "Lowest Common Ancestor - Tarjan's off-line algorithm"
+    ]},
+    {name:'Flows and related problems', items:[
+      'Maximum flow - Ford-Fulkerson and Edmonds-Karp',
+      'Maximum flow - Push-relabel algorithm',
+      'Maximum flow - Push-relabel algorithm improved',
+      "Maximum flow - Dinic's algorithm",
+      'Maximum flow - MPM algorithm',
+      'Flows with demands',
+      'Minimum-cost flow',
+      'Assignment problem',
+      'Minimum cut - Stoer-Wagner algorithm'
+    ]},
+    {name:'Matchings and related problems', items:[
+      'Bipartite Graph Check',
+      "Kuhn's Algorithm - Maximum Bipartite Matching",
+      'Hungarian Algorithm'
+    ]},
+    {name:'Miscellaneous', items:[
+      'Topological Sorting',
+      'Edge connectivity / Vertex connectivity',
+      'Tree painting',
+      '2-SAT',
+      'Heavy-light decomposition',
+      'Centroid decomposition'
+    ]}
+  ]},
+  {id:'misc', name:'Miscellaneous', groups:[
+    {name:'Sequences', items:[
+      'RMQ task (Range Minimum Query - the smallest element in an interval)',
+      'Search the subsegment with the maximum/minimum sum',
+      'K-th order statistic in O(N)',
+      'MEX task (Minimal Excluded element in an array)'
+    ]},
+    {name:'Game Theory', items:[
+      'Games on arbitrary graphs',
+      'Sprague-Grundy theorem. Nim'
+    ]},
+    {name:'Schedules', items:[
+      'Scheduling jobs on one machine',
+      'Scheduling jobs on two machines',
+      'Optimal schedule of jobs given their deadlines and durations'
+    ]},
+    {name:'Miscellaneous', items:[
+      'Tortoise and Hare Algorithm (Linked List cycle detection)',
+      'Josephus problem',
+      '15 Puzzle Game: Existence Of The Solution',
+      'The Stern-Brocot Tree and Farey Sequences'
+    ]}
+  ]}
+];
+
+/* ===================== State ===================== */
+const STORAGE_KEY = 'dsa-sheet-progress-v2';
+const STREAK_KEY = 'dsa-sheet-streak-v2';
+const COLLAPSED_KEY = 'dsa-sheet-collapsed-v1';
+const GROUP_COLLAPSED_KEY = 'dsa-sheet-group-collapsed-v1';
+const REVISION_KEY = 'dsa-sheet-revision-v1';
+const LOGS_KEY = 'dsa-sheet-logs-v1';
+
+let done = {};
+try{ done = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ done = {}; }
+
+let collapsed = {};
+let groupCollapsed = {};
+
+let activityLogs = {};
+try{ activityLogs = JSON.parse(localStorage.getItem(LOGS_KEY)) || {}; }catch(e){ activityLogs = {}; }
+
+let allCollapsed = true;
+
+function persist(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); }catch(e){}
+}
+
+function persistCollapsed(){
+  try{ localStorage.setItem(COLLAPSED_KEY, JSON.stringify(collapsed)); }catch(e){}
+}
+
+function persistGroupCollapsed(){
+  try{ localStorage.setItem(GROUP_COLLAPSED_KEY, JSON.stringify(groupCollapsed)); }catch(e){}
+}
+
+function persistLogs(){
+  try{ localStorage.setItem(LOGS_KEY, JSON.stringify(activityLogs)); }catch(e){}
+}
+
+/* streak: count of distinct days this page has been opened */
+function updateStreak(){
+  let data = {};
+  try{ data = JSON.parse(localStorage.getItem(STREAK_KEY)) || {}; }catch(e){ data = {}; }
+  const today = new Date().toISOString().slice(0,10);
+  if(!data.days) data.days = [];
+  if(!data.days.includes(today)) data.days.push(today);
+  try{ localStorage.setItem(STREAK_KEY, JSON.stringify(data)); }catch(e){}
+  document.getElementById('streakLabel').innerHTML = 'visited <strong>' + data.days.length + '</strong> day' + (data.days.length===1?'':'s');
+}
+
+/* flatten items with unique, stable ids and initialize collapsed states */
+const ALL_ITEMS = [];
+DATA.forEach(cat=>{
+  collapsed[cat.id] = true;
+  cat.groups.forEach(g=>{
+    groupCollapsed[cat.id + '::' + g.name] = true;
+    g.items.forEach((name, idx)=>{
+      const id = cat.id + '::' + g.name + '::' + idx;
+      ALL_ITEMS.push({id, name, cat: cat.id, catName: cat.name, groupName: g.name});
+    });
+  });
+});
+
+let filterStatus = 'all';
+let searchTerm = '';
+
+/* ===================== Sidebar chain ===================== */
+const chainEl = document.getElementById('chain');
+function catStats(catId){
+  const items = ALL_ITEMS.filter(i=>i.cat===catId);
+  const c = items.filter(i=>done[i.id]).length;
+  return {total: items.length, done: c, pct: items.length ? Math.round(c/items.length*100) : 0};
+}
+function renderChain(){
+  chainEl.innerHTML = '';
+  DATA.forEach(cat=>{
+    const s = catStats(cat.id);
+    const node = document.createElement('div');
+    node.className = 'node';
+    node.dataset.cat = cat.id;
+    node.style.setProperty('--pct', s.pct);
+    node.innerHTML = `
+      <div class="node-dot"></div>
+      <div>
+        <div class="node-label-name">${cat.name}</div>
+        <div class="node-label-count">${s.done}/${s.total}</div>
+      </div>`;
+    node.addEventListener('click', ()=>{
+      const catId = cat.id;
+      if (collapsed[catId]) {
+        toggleCollapse(catId);
+      }
+      document.getElementById('cat-'+catId).scrollIntoView({behavior:'smooth', block:'start'});
+    });
+    chainEl.appendChild(node);
+  });
+}
+function updateChainNode(catId){
+  const node = document.querySelector(`.node[data-cat="${catId}"]`);
+  if(!node) return;
+  const s = catStats(catId);
+  node.style.setProperty('--pct', s.pct);
+  node.querySelector('.node-label-count').textContent = s.done + '/' + s.total;
+}
+
+/* ===================== Overall progress ===================== */
+function renderOverall(){
+  const total = ALL_ITEMS.length;
+  const c = ALL_ITEMS.filter(i=>done[i.id]).length;
+  const pct = total ? Math.round(c/total*100) : 0;
+  document.getElementById('overallNum').innerHTML = pct + '<small>%</small>';
+  document.getElementById('overallBar').style.width = pct + '%';
+  document.getElementById('overallLabel').textContent = c + ' / ' + total + ' topics done';
+}
+
+/* ===================== Collapsible behavior ===================== */
+function toggleCollapse(catId) {
+  collapsed[catId] = !collapsed[catId];
+  persistCollapsed();
+  const catEl = document.getElementById('cat-' + catId);
+  if(catEl) {
+    catEl.classList.toggle('collapsed', !!collapsed[catId]);
+  }
+}
+
+function toggleGroupCollapse(event, catId, groupName) {
+  if (event) event.stopPropagation();
+  const key = catId + '::' + groupName;
+  groupCollapsed[key] = !groupCollapsed[key];
+  persistGroupCollapsed();
+  const groupId = 'group-' + catId + '-' + groupName.replace(/[^a-zA-Z0-9-_]/g, '-');
+  const groupEl = document.getElementById(groupId);
+  if(groupEl) {
+    groupEl.classList.toggle('collapsed', !!groupCollapsed[key]);
+  }
+}
+
+function toggleCollapseAll() {
+  allCollapsed = !allCollapsed;
+  DATA.forEach(cat => {
+    collapsed[cat.id] = allCollapsed;
+    cat.groups.forEach(g => {
+      groupCollapsed[cat.id + '::' + g.name] = allCollapsed;
+    });
+  });
+  persistCollapsed();
+  persistGroupCollapsed();
+  renderCategories();
+  
+  const btn = document.getElementById('collapseAllBtn');
+  if (btn) {
+    btn.textContent = allCollapsed ? 'expand all' : 'collapse all';
+  }
+}
+
+/* ===================== Categories & items ===================== */
+const categoriesEl = document.getElementById('categories');
+
+function itemMatchesFilters(item){
+  if(filterStatus === 'pending' && done[item.id]) return false;
+  if(filterStatus === 'done' && !done[item.id]) return false;
+  if(searchTerm && !item.name.toLowerCase().includes(searchTerm)) return false;
+  return true;
+}
+
+function checkSvg(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="#0B1210" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+}
+
+function renderCategories(){
+  categoriesEl.innerHTML = '';
+  DATA.forEach(cat=>{
+    const s = catStats(cat.id);
+    const section = document.createElement('section');
+    section.className = 'category' + (collapsed[cat.id] ? ' collapsed' : '');
+    section.id = 'cat-' + cat.id;
+    section.innerHTML = `
+      <div class="category-head" onclick="toggleCollapse('${cat.id}')">
+        <div class="category-title">${cat.name}</div>
+        <div class="category-count" id="count-${cat.id}">${s.done}/${s.total}</div>
+        <svg class="category-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="category-bar"><div class="category-bar-fill" id="bar-${cat.id}" style="width:${s.pct}%"></div></div>
+    `;
+
+    const body = document.createElement('div');
+    body.className = 'category-body';
+
+    cat.groups.forEach(g=>{
+      const groupKey = cat.id + '::' + g.name;
+      const isGroupCollapsed = !!groupCollapsed[groupKey];
+      const groupContainer = document.createElement('div');
+      groupContainer.className = 'group-container' + (isGroupCollapsed ? ' collapsed' : '');
+      groupContainer.id = 'group-' + cat.id + '-' + g.name.replace(/[^a-zA-Z0-9-_]/g, '-');
+      groupContainer.dataset.groupName = g.name;
+
+      groupContainer.innerHTML = `
+        <div class="group-name" onclick="toggleGroupCollapse(event, '${cat.id}', '${g.name}')">
+          <span>${g.name}</span>
+          <svg class="group-chevron" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+      `;
+
+      const groupItems = document.createElement('div');
+      groupItems.className = 'group-items';
+
+      g.items.forEach((name, idx)=>{
+        const id = cat.id + '::' + g.name + '::' + idx;
+        const row = document.createElement('div');
+        row.className = 'item' + (done[id] ? ' done' : '');
+        row.dataset.id = id;
+        row.dataset.cat = cat.id;
+        row.innerHTML = `
+          <div class="checkbox">${checkSvg()}</div>
+          <div class="item-name">${name}</div>
+        `;
+        row.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          toggleItem(id, cat.id);
+        });
+        groupItems.appendChild(row);
+      });
+
+      groupContainer.appendChild(groupItems);
+      body.appendChild(groupContainer);
+    });
+
+    section.appendChild(body);
+    categoriesEl.appendChild(section);
+  });
+}
+
+/* toggle a single item without re-rendering the whole page (no layout jump) */
+function toggleItem(id, catId){
+  done[id] = !done[id];
+  persist();
+
+  const row = document.querySelector(`.item[data-id="${CSS.escape(id)}"]`);
+  if(row) row.classList.toggle('done', !!done[id]);
+
+  const s = catStats(catId);
+  const countEl = document.getElementById('count-' + catId);
+  const barEl = document.getElementById('bar-' + catId);
+  if(countEl) countEl.textContent = s.done + '/' + s.total;
+  if(barEl) barEl.style.width = s.pct + '%';
+
+  const item = ALL_ITEMS.find(i => i.id === id);
+  if (item) {
+    logActivity(id, item.name, done[id]);
+  }
+
+  updateChainNode(catId);
+  renderOverall();
+
+  // Tick persistence: do NOT immediately hide checked/unchecked item under active filters
+}
+
+function applyFilters(){
+  let anyVisible = false;
+  const isFiltering = !!(filterStatus !== 'all' || searchTerm);
+
+  document.querySelectorAll('.item').forEach(row=>{
+    const item = ALL_ITEMS.find(i=>i.id === row.dataset.id);
+    if(!item) return;
+    const visible = itemMatchesFilters(item);
+    row.classList.toggle('hidden', !visible);
+    if(visible) anyVisible = true;
+  });
+
+  document.querySelectorAll('.category').forEach(catEl=>{
+    let catHasVisible = false;
+    const catId = catEl.id.replace('cat-', '');
+    
+    const groupContainers = Array.from(catEl.querySelectorAll('.group-container'));
+    groupContainers.forEach(groupEl => {
+      const groupName = groupEl.dataset.groupName;
+      const groupKey = catId + '::' + groupName;
+      
+      const items = Array.from(groupEl.querySelectorAll('.item'));
+      let groupHasVisible = false;
+      items.forEach(row => {
+        if (!row.classList.contains('hidden')) {
+          groupHasVisible = true;
+        }
+      });
+      
+      groupEl.style.display = groupHasVisible ? '' : 'none';
+      if (groupHasVisible) catHasVisible = true;
+      
+      if (isFiltering) {
+        groupEl.classList.remove('collapsed');
+      } else {
+        groupEl.classList.toggle('collapsed', !!groupCollapsed[groupKey]);
+      }
+    });
+
+    catEl.style.display = catHasVisible ? '' : 'none';
+
+    if (isFiltering) {
+      catEl.classList.remove('collapsed');
+    } else {
+      catEl.classList.toggle('collapsed', !!collapsed[catId]);
+    }
+  });
+
+  document.getElementById('noResults').style.display = anyVisible ? 'none' : 'block';
+}
+
+
+
+/* ===================== Activity Log (Confidence Tracker) ===================== */
+function logActivity(itemId, itemName, isChecked) {
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  if (!activityLogs[today]) {
+    activityLogs[today] = [];
+  }
+  
+  if (isChecked) {
+    if (!activityLogs[today].includes(itemName)) {
+      activityLogs[today].push(itemName);
+    }
+  } else {
+    Object.keys(activityLogs).forEach(day => {
+      activityLogs[day] = activityLogs[day].filter(name => name !== itemName);
+    });
+    Object.keys(activityLogs).forEach(day => {
+      if (activityLogs[day].length === 0) {
+        delete activityLogs[day];
+      }
+    });
+  }
+  persistLogs();
+}
+
+
+
+/* ===================== Scroll spy ===================== */
+function setupScrollSpy(){
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const id = entry.target.id.replace('cat-','');
+      const node = document.querySelector(`.node[data-cat="${id}"]`);
+      if(!node) return;
+      if(entry.isIntersecting){
+        document.querySelectorAll('.node').forEach(n=>n.classList.remove('active'));
+        node.classList.add('active');
+      }
+    });
+  }, {rootMargin: '-10% 0px -70% 0px'});
+  document.querySelectorAll('.category').forEach(el=>observer.observe(el));
+}
+
+/* ===================== Controls ===================== */
+document.getElementById('search').addEventListener('input', (e)=>{
+  searchTerm = e.target.value.trim().toLowerCase();
+  applyFilters();
+});
+
+document.querySelectorAll('.chip[data-filter]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.chip[data-filter]').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    filterStatus = chip.dataset.filter;
+    applyFilters();
+  });
+});
+
+document.getElementById('collapseAllBtn').addEventListener('click', toggleCollapseAll);
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Reset all progress? This clears every checked topic on this device.')){
+    done = {};
+    collapsed = {};
+    groupCollapsed = {};
+    activityLogs = {};
+    allCollapsed = false;
+    persist();
+    persistCollapsed();
+    persistGroupCollapsed();
+    persistLogs();
+    try {
+      localStorage.removeItem(REVISION_KEY);
+    } catch(e) {}
+    
+    const btn = document.getElementById('collapseAllBtn');
+    if (btn) btn.textContent = 'collapse all';
+
+    renderOverall();
+    renderChain();
+    renderCategories();
+    applyFilters();
+    setupScrollSpy();
+  }
+});
+
+/* ===================== Init ===================== */
+renderChain();
+renderOverall();
+renderCategories();
+applyFilters();
+setupScrollSpy();
+updateStreak();
+</script>
+</body>
+</html>
