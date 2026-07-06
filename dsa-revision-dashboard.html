@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Revision Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1115;
+    --bg-alt:#14171D;
+    --surface:#1A1E25;
+    --surface-hover:#20252D;
+    --border:#2A2F38;
+    --border-soft:#22262E;
+    --text:#E6E8EB;
+    --text-dim:#8D95A1;
+    --text-faint:#5B626D;
+    --accent:#5FB3A3;
+    --accent-dim:#3E7A70;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'IBM Plex Sans', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.5;}
+  ::selection{background:var(--accent-dim); color:#fff;}
+
+  /* Sleek custom scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-dim);
+  }
+  html, body, .sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--bg);
+  }
+
+  .app{display:grid; grid-template-columns:260px 1fr; min-height:100vh;}
+  @media (max-width: 860px){ .app{grid-template-columns:1fr;} }
+
+  /* Sidebar */
+  .sidebar{background:var(--bg-alt); border-right:1px solid var(--border-soft); padding:28px 0 40px; position:sticky; top:0; height:100vh; overflow-y:auto;}
+  @media (max-width: 860px){ .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--border-soft); padding:20px 0;} }
+  .brand{padding:0 24px 24px; border-bottom:1px solid var(--border-soft); margin-bottom:8px;}
+  .brand-mark{font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--accent); text-transform:uppercase;}
+  .brand-title{font-family:var(--mono); font-weight:700; font-size:19px; margin:6px 0 2px; color:var(--text);}
+  .brand-sub{font-size:12px; color:var(--text-faint);}
+  .overall{padding:18px 24px 20px;}
+  .overall-num{font-family:var(--mono); font-size:28px; font-weight:700; color:var(--text);}
+  .overall-num small{font-size:14px; color:var(--text-faint); font-weight:400;}
+  .overall-bar{height:5px; background:var(--border); border-radius:3px; margin-top:10px; overflow:hidden;}
+  .overall-bar-fill{height:100%; background:linear-gradient(90deg, var(--accent), #7FD1C1); border-radius:3px; transition:width .25s ease;}
+  .overall-label{font-size:11px; color:var(--text-faint); margin-top:8px; font-family:var(--mono);}
+  .streak{padding:14px 24px 4px; font-size:11.5px; color:var(--text-faint); font-family:var(--mono); border-top:1px solid var(--border-soft);}
+  .streak strong{color:var(--accent);}
+
+  .dashboard-link {
+    display: inline-block;
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--accent-dim);
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+  .dashboard-link:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  /* Main */
+  .main{padding:32px 40px 100px; max-width:900px;}
+  @media (max-width:860px){ .main{padding:24px 18px 80px;} }
+
+  .header-title {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+
+  /* Revision panel styles */
+  .revision-card {
+    background: var(--bg-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  .revision-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .revision-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .revision-roll-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .revision-roll-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--surface-hover);
+  }
+  .revision-items {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 640px) {
+    .revision-items {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+  }
+  .revision-item {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 105px;
+  }
+  .revision-item:hover {
+    background: var(--surface-hover);
+    border-color: var(--border);
+    transform: translateY(-1px);
+  }
+  .revision-item-meta {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .revision-item-name {
+    font-size: 13.5px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+  .revision-item-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text-dim);
+  }
+  .checkbox{width:16px; height:16px; border-radius:4px; border:1.5px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:background .12s ease, border-color .12s ease;}
+  .checkbox svg{opacity:0; width:10px; height:10px;}
+  
+  .revision-item.done {
+    border-color: var(--border-soft);
+    opacity: 0.65;
+  }
+  .revision-item.done:hover {
+    opacity: 0.85;
+  }
+  .revision-item.done .revision-item-name {
+    color: var(--text-faint);
+    text-decoration: line-through;
+  }
+  .revision-item.done .checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .revision-item.done .checkbox svg {
+    opacity: 1;
+  }
+
+  footer{max-width:900px; padding:40px 0 60px; color:var(--text-faint); font-size:11.5px; font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">// progress logs</div>
+      <div class="brand-title">Dashboard</div>
+      <div class="brand-sub">Revision plan &amp; activity ledger.</div>
+      <a href="index.html" class="dashboard-link">Open Checklist</a>
+    </div>
+    <div class="overall">
+      <div class="overall-num" id="overallNum">0<small>%</small></div>
+      <div class="overall-bar"><div class="overall-bar-fill" id="overallBar" style="width:0%"></div></div>
+      <div class="overall-label" id="overallLabel">0 / 0 topics done</div>
+    </div>
+    <div class="streak" id="streakLabel"></div>
+  </aside>
+
+  <main class="main">
+    <div class="header-title">// Daily Dashboard</div>
+    
+    <div id="revisionSection"></div>
+    <div id="logSection"></div>
+
+    <footer>Progress saves locally in this browser; open this dashboard or the main checklist to see updates.</footer>
+  </main>
+</div>
+
+<script>
+/* ===================== DATA (verbatim, complete) ===================== */
+const DATA = [
+  {id:'algebra', name:'Algebra', groups:[
+    {name:'Fundamentals', items:[
+      'Binary Exponentiation',
+      'Euclidean algorithm for computing the greatest common divisor',
+      'Extended Euclidean Algorithm',
+      'Linear Diophantine Equations',
+      'Fibonacci Numbers',
+      'Prime numbers',
+      'Sieve of Eratosthenes',
+      'Linear Sieve',
+      'Primality tests',
+      'Integer factorization'
+    ]},
+    {name:'Number-theoretic functions', items:[
+      "Euler's totient function",
+      'Number of divisors / sum of divisors'
+    ]},
+    {name:'Modular arithmetic', items:[
+      'Modular Inverse',
+      'Linear Congruence Equation',
+      'Chinese Remainder Theorem',
+      "Garner's Algorithm",
+      'Factorial modulo p',
+      'Discrete Log',
+      'Primitive Root',
+      'Discrete Root',
+      'Montgomery Multiplication'
+    ]},
+    {name:'Number systems', items:[
+      'Balanced Ternary',
+      'Gray code'
+    ]},
+    {name:'Bit manipulation', items:[
+      'Binary number',
+      'Bit operators',
+      'Bitwise operators',
+      'Shift operators',
+      'Useful tricks',
+      'Set/flip/clear a bit',
+      'Check if a bit is set',
+      'Check if the number is divisible by a power of 2',
+      'Check if an integer is a power of 2',
+      'Clear the right-most set bit',
+      "Brian Kernighan's algorithm",
+      'Count set bits upto $n$',
+      'Additional tricks',
+      'Language and compiler support',
+      'Practice Problems',
+      'Enumerating submasks of a bitmask'
+    ]},
+    {name:'Miscellaneous', items:[
+      'Arbitrary-Precision Arithmetic',
+      'Fast Fourier transform',
+      'Operations on polynomials and series',
+      'Continued fractions',
+      'Factoring Exponentiation'
+    ]}
+  ]},
+  {id:'ds', name:'Data Structures', groups:[
+    {name:'Fundamentals', items:[
+      'Minimum Stack / Minimum Queue',
+      'Sparse Table'
+    ]},
+    {name:'Trees', items:[
+      'Disjoint Set Union',
+      'Fenwick Tree',
+      'Sqrt Decomposition',
+      'Segment Tree',
+      'Treap',
+      'Sqrt Tree',
+      'Randomized Heap'
+    ]},
+    {name:'Advanced', items:[
+      'Deleting from a data structure in O(T(n) log n)'
+    ]}
+  ]},
+  {id:'dp', name:'Dynamic Programming', groups:[
+    {name:'Fundamentals', items:[
+      'Introduction to Dynamic Programming',
+      'Knapsack Problem',
+      'Longest increasing subsequence'
+    ]},
+    {name:'DP optimizations', items:[
+      'Divide and Conquer DP',
+      "Knuth's Optimization"
+    ]},
+    {name:'Tasks', items:[
+      'Dynamic Programming on Broken Profile. Problem "Parquet"',
+      'Finding the largest zero submatrix'
+    ]}
+  ]},
+  {id:'strings', name:'String Processing', groups:[
+    {name:'Fundamentals', items:[
+      'String Hashing',
+      'Rabin-Karp for String Matching',
+      'Prefix function - Knuth-Morris-Pratt',
+      'Z-function',
+      'Suffix Array',
+      'Aho-Corasick algorithm'
+    ]},
+    {name:'Advanced', items:[
+      'Suffix Tree',
+      'Suffix Automaton',
+      'Lyndon factorization'
+    ]},
+    {name:'Tasks', items:[
+      'Expression parsing',
+      "Manacher's Algorithm - Finding all sub-palindromes in O(N)",
+      'Finding repetitions'
+    ]}
+  ]},
+  {id:'linalg', name:'Linear Algebra', groups:[
+    {name:'Matrices', items:[
+      'Gauss & System of Linear Equations',
+      'Gauss & Determinant',
+      'Kraut & Determinant',
+      'Rank of a matrix'
+    ]}
+  ]},
+  {id:'combo', name:'Combinatorics', groups:[
+    {name:'Fundamentals', items:[
+      'Finding Power of Factorial Divisor',
+      'Binomial Coefficients',
+      'Catalan Numbers'
+    ]},
+    {name:'Techniques', items:[
+      'The Inclusion-Exclusion Principle',
+      "Burnside's lemma / Pólya enumeration theorem",
+      'Stars and bars',
+      'Generating all K-combinations'
+    ]},
+    {name:'Tasks', items:[
+      'Placing Bishops on a Chessboard',
+      'Balanced bracket sequences',
+      'Counting labeled graphs'
+    ]}
+  ]},
+  {id:'numerical', name:'Numerical Methods', groups:[
+    {name:'Search', items:[
+      'Binary Search',
+      'Ternary Search',
+      "Newton's method for finding roots",
+      'Simulated Annealing'
+    ]},
+    {name:'Integration', items:[
+      "Integration by Simpson's formula"
+    ]}
+  ]},
+  {id:'geometry', name:'Geometry', groups:[
+    {name:'Elementary operations', items:[
+      'Basic Geometry',
+      'Finding the equation of a line for a segment',
+      'Intersection Point of Lines',
+      'Check if two segments intersect',
+      'Intersection of Segments',
+      'Circle-Line Intersection',
+      'Circle-Circle Intersection',
+      'Common tangents to two circles',
+      'Length of the union of segments'
+    ]},
+    {name:'Polygons', items:[
+      'Oriented area of a triangle',
+      'Area of simple polygon',
+      'Check if points belong to the convex polygon in O(log N)',
+      'Minkowski sum of convex polygons',
+      "Pick's Theorem - area of lattice polygons",
+      'Lattice points of non-lattice polygon'
+    ]},
+    {name:'Convex hull', items:[
+      'Convex hull construction',
+      'Convex hull trick and Li Chao tree'
+    ]},
+    {name:'Sweep-line', items:[
+      'Search for a pair of intersecting segments'
+    ]},
+    {name:'Planar graphs', items:[
+      'Finding faces of a planar graph',
+      'Point location in O(log N)'
+    ]},
+    {name:'Miscellaneous', items:[
+      'Finding the nearest pair of points',
+      'Delaunay triangulation and Voronoi diagram',
+      'Vertical decomposition',
+      'Half-plane intersection - S&I Algorithm in O(N log N)',
+      'Manhattan Distance',
+      'Minimum Enclosing Circle'
+    ]}
+  ]},
+  {id:'graphs', name:'Graphs', groups:[
+    {name:'Graph traversal', items:[
+      'Breadth First Search',
+      'Depth First Search'
+    ]},
+    {name:'Connected components, bridges, articulations points', items:[
+      'Finding Connected Components',
+      'Finding Bridges in O(N+M)',
+      'Finding Bridges Online',
+      'Finding Articulation Points in O(N+M)',
+      'Strongly Connected Components and Condensation Graph',
+      'Strong Orientation'
+    ]},
+    {name:'Single-source shortest paths', items:[
+      'Dijkstra - finding shortest paths from given vertex',
+      'Dijkstra on sparse graphs',
+      'Bellman-Ford - finding shortest paths with negative weights',
+      '0-1 BFS',
+      'D´Esopo-Pape algorithm'
+    ]},
+    {name:'All-pairs shortest paths', items:[
+      'Floyd-Warshall - finding all shortest paths',
+      'Number of paths of fixed length / Shortest paths of fixed length'
+    ]},
+    {name:'Spanning trees', items:[
+      "Minimum Spanning Tree - Prim's Algorithm",
+      'Minimum Spanning Tree - Kruskal',
+      'Minimum Spanning Tree - Kruskal with Disjoint Set Union',
+      'Second best Minimum Spanning Tree - Using Kruskal and Lowest Common Ancestor',
+      'Kirchhoff Theorem',
+      'Prüfer code'
+    ]},
+    {name:'Cycles', items:[
+      'Checking a graph for acyclicity and finding a cycle in O(M)',
+      'Finding a Negative Cycle in the Graph',
+      'Eulerian Path'
+    ]},
+    {name:'Lowest common ancestor', items:[
+      'Lowest Common Ancestor',
+      'Lowest Common Ancestor - Binary Lifting',
+      'Lowest Common Ancestor - Farach-Colton and Bender algorithm',
+      'Solve RMQ by finding LCA',
+      "Lowest Common Ancestor - Tarjan's off-line algorithm"
+    ]},
+    {name:'Flows and related problems', items:[
+      'Maximum flow - Ford-Fulkerson and Edmonds-Karp',
+      'Maximum flow - Push-relabel algorithm',
+      'Maximum flow - Push-relabel algorithm improved',
+      "Maximum flow - Dinic's algorithm",
+      'Maximum flow - MPM algorithm',
+      'Flows with demands',
+      'Minimum-cost flow',
+      'Assignment problem',
+      'Minimum cut - Stoer-Wagner algorithm'
+    ]},
+    {name:'Matchings and related problems', items:[
+      'Bipartite Graph Check',
+      "Kuhn's Algorithm - Maximum Bipartite Matching",
+      'Hungarian Algorithm'
+    ]},
+    {name:'Miscellaneous', items:[
+      'Topological Sorting',
+      'Edge connectivity / Vertex connectivity',
+      'Tree painting',
+      '2-SAT',
+      'Heavy-light decomposition',
+      'Centroid decomposition'
+    ]}
+  ]},
+  {id:'misc', name:'Miscellaneous', groups:[
+    {name:'Sequences', items:[
+      'RMQ task (Range Minimum Query - the smallest element in an interval)',
+      'Search the subsegment with the maximum/minimum sum',
+      'K-th order statistic in O(N)',
+      'MEX task (Minimal Excluded element in an array)'
+    ]},
+    {name:'Game Theory', items:[
+      'Games on arbitrary graphs',
+      'Sprague-Grundy theorem. Nim'
+    ]},
+    {name:'Schedules', items:[
+      'Scheduling jobs on one machine',
+      'Scheduling jobs on two machines',
+      'Optimal schedule of jobs given their deadlines and durations'
+    ]},
+    {name:'Miscellaneous', items:[
+      'Tortoise and Hare Algorithm (Linked List cycle detection)',
+      'Josephus problem',
+      '15 Puzzle Game: Existence Of The Solution',
+      'The Stern-Brocot Tree and Farey Sequences'
+    ]}
+  ]}
+];
+
+/* ===================== State ===================== */
+const STORAGE_KEY = 'dsa-sheet-progress-v2';
+const STREAK_KEY = 'dsa-sheet-streak-v2';
+const LOGS_KEY = 'dsa-sheet-logs-v1';
+const REVISION_KEY = 'dsa-sheet-revision-v1';
+
+let done = {};
+try{ done = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ done = {}; }
+
+let activityLogs = {};
+try{ activityLogs = JSON.parse(localStorage.getItem(LOGS_KEY)) || {}; }catch(e){ activityLogs = {}; }
+
+function persist(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); }catch(e){}
+}
+
+function persistLogs(){
+  try{ localStorage.setItem(LOGS_KEY, JSON.stringify(activityLogs)); }catch(e){}
+}
+
+/* streak: count of distinct days this page has been opened */
+function updateStreak(){
+  let data = {};
+  try{ data = JSON.parse(localStorage.getItem(STREAK_KEY)) || {}; }catch(e){ data = {}; }
+  const today = new Date().toISOString().slice(0,10);
+  if(!data.days) data.days = [];
+  if(!data.days.includes(today)) data.days.push(today);
+  try{ localStorage.setItem(STREAK_KEY, JSON.stringify(data)); }catch(e){}
+  document.getElementById('streakLabel').innerHTML = 'visited <strong>' + data.days.length + '</strong> day' + (data.days.length===1?'':'s');
+}
+
+/* flatten items with unique, stable ids */
+const ALL_ITEMS = [];
+DATA.forEach(cat=>{
+  cat.groups.forEach(g=>{
+    g.items.forEach((name, idx)=>{
+      const id = cat.id + '::' + g.name + '::' + idx;
+      ALL_ITEMS.push({id, name, cat: cat.id, catName: cat.name, groupName: g.name});
+    });
+  });
+});
+
+/* ===================== Overall progress ===================== */
+function renderOverall(){
+  const total = ALL_ITEMS.length;
+  const c = ALL_ITEMS.filter(i=>done[i.id]).length;
+  const pct = total ? Math.round(c/total*100) : 0;
+  document.getElementById('overallNum').innerHTML = pct + '<small>%</small>';
+  document.getElementById('overallBar').style.width = pct + '%';
+  document.getElementById('overallLabel').textContent = c + ' / ' + total + ' topics done';
+}
+
+function toggleItem(id){
+  done[id] = !done[id];
+  persist();
+
+  const item = ALL_ITEMS.find(i => i.id === id);
+  if (item) {
+    logActivity(id, item.name, done[id]);
+  }
+
+  renderOverall();
+  renderRevision();
+  renderActivityLog();
+}
+
+function checkSvg(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="#0B1210" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+}
+
+/* ===================== Revision (Random 3 Topics) ===================== */
+function rollRevision(force = false) {
+  let stored = null;
+  try {
+    stored = JSON.parse(localStorage.getItem(REVISION_KEY));
+  } catch(e) {}
+  
+  if (force || !stored || !Array.isArray(stored) || stored.length === 0) {
+    const pending = ALL_ITEMS.filter(i => !done[i.id]);
+    const completed = ALL_ITEMS.filter(i => done[i.id]);
+    
+    let selected = [];
+    if (pending.length >= 3) {
+      selected = shuffleArray([...pending]).slice(0, 3);
+    } else {
+      selected = [...pending];
+      const needed = 3 - selected.length;
+      const extra = shuffleArray([...completed]).slice(0, needed);
+      selected = selected.concat(extra);
+    }
+    
+    stored = selected.map(i => i.id);
+    try {
+      localStorage.setItem(REVISION_KEY, JSON.stringify(stored));
+    } catch(e) {}
+  }
+  return stored;
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderRevision() {
+  const revisionSection = document.getElementById('revisionSection');
+  if (!revisionSection) return;
+  
+  const ids = rollRevision(false);
+  const items = ids.map(id => ALL_ITEMS.find(i => i.id === id)).filter(Boolean);
+  
+  if (items.length === 0) {
+    revisionSection.innerHTML = '';
+    return;
+  }
+  
+  revisionSection.innerHTML = `
+    <div class="revision-card">
+      <div class="revision-header">
+        <div class="revision-title">// Revision Plan</div>
+        <button class="revision-roll-btn" onclick="triggerRevisionRoll()">Roll New Topics</button>
+      </div>
+      <div class="revision-items">
+        ${items.map(item => {
+          const isItemDone = !!done[item.id];
+          return `
+            <div class="revision-item ${isItemDone ? 'done' : ''}" onclick="toggleRevisionItem(event, '${item.id}')">
+              <div>
+                <div class="revision-item-meta" title="${item.catName} • ${item.groupName}">${item.catName} • ${item.groupName}</div>
+                <div class="revision-item-name">${item.name}</div>
+              </div>
+              <div class="revision-item-check">
+                <div class="checkbox">
+                  ${isItemDone ? checkSvg() : ''}
+                </div>
+                <span>${isItemDone ? 'Completed' : 'Reviewing'}</span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function toggleRevisionItem(event, id) {
+  event.stopPropagation();
+  toggleItem(id);
+}
+
+function triggerRevisionRoll() {
+  rollRevision(true);
+  renderRevision();
+}
+
+/* ===================== Activity Log (Confidence Tracker) ===================== */
+function logActivity(itemId, itemName, isChecked) {
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  if (!activityLogs[today]) {
+    activityLogs[today] = [];
+  }
+  
+  if (isChecked) {
+    if (!activityLogs[today].includes(itemName)) {
+      activityLogs[today].push(itemName);
+    }
+  } else {
+    Object.keys(activityLogs).forEach(day => {
+      activityLogs[day] = activityLogs[day].filter(name => name !== itemName);
+    });
+    Object.keys(activityLogs).forEach(day => {
+      if (activityLogs[day].length === 0) {
+        delete activityLogs[day];
+      }
+    });
+  }
+  persistLogs();
+}
+
+function renderActivityLog() {
+  const logSection = document.getElementById('logSection');
+  if (!logSection) return;
+  
+  const days = Object.keys(activityLogs).sort((a, b) => new Date(b) - new Date(a));
+  
+  if (days.length === 0) {
+    logSection.innerHTML = `
+      <div class="revision-card">
+        <div class="revision-title">// Activity Log</div>
+        <div style="color: var(--text-faint); font-size: 13px; font-style: italic; margin-top: 14px; text-align: center; font-family: var(--mono);">
+          No topics completed yet. Check off items in the Checklist to log your daily progress!
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  logSection.innerHTML = `
+    <div class="revision-card">
+      <div class="revision-title">// Confidence Tracker &amp; Activity Log</div>
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 18px;">
+        ${days.map(day => {
+          const items = activityLogs[day];
+          return `
+            <div style="border-left: 2px solid var(--accent); padding-left: 14px;">
+              <div style="font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>${day}</span>
+                <span style="font-size: 10px; background: var(--accent-dim); color: #fff; padding: 1px 6px; border-radius: 10px; font-weight: 500;">+${items.length}</span>
+              </div>
+              <div style="font-size: 11px; color: var(--text-faint); margin: 2px 0 8px; font-family: var(--mono);">Successfully completed ${items.length} topic${items.length === 1 ? '' : 's'}</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                ${items.map(item => `
+                  <span style="font-size: 11px; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 4px; padding: 4px 8px; color: var(--text-dim); font-family: var(--sans);">${item}</span>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ===================== Init ===================== */
+renderOverall();
+renderRevision();
+renderActivityLog();
+updateStreak();
+</script>
+</body>
+</html>
